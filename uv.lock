@@ -1568,6 +1568,13 @@ test = [
     { name = "pytest-mock" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "langchain", specifier = "==0.3.27" },
@@ -1588,6 +1595,13 @@ requires-dist = [
     { name = "streamlit", specifier = "==1.38.0" },
 ]
 provides-extras = ["test"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = "==8.0.0" },
+    { name = "pytest-cov", specifier = "==4.1.0" },
+    { name = "pytest-mock", specifier = "==3.12.0" },
+]
 
 [[package]]
 name = "tenacity"
