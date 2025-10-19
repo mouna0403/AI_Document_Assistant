@@ -6,6 +6,7 @@ Supports multi-level summaries: brief, standard, detailed.
 
 import os
 
+from dotenv import load_dotenv
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,23 +19,11 @@ SUMMARY_PROMPTS = {
     "detailed": "Write a detailed summary of the following text, including all key points:\n\n{context}",
 }
 
+load_dotenv()
 
-def summarize_text(text: str, level: str = "standard") -> str:
-    """
-    Summarize the provided text using a Groq-hosted Llama model.
 
-    Args:
-        text (str): The document text to summarize.
-        level (str): Summary level; one of "brief", "standard", or "detailed". Defaults to "standard".
-
-    Returns:
-        str: The generated summary.
-    """
-
-    if level not in SUMMARY_PROMPTS:
-        raise ValueError(
-            f"Invalid summary level '{level}'. Must be one of {list(SUMMARY_PROMPTS.keys())}."
-        )
+def summarize_text(text: str) -> str:
+    """Summarize the provided text using a Groq-hosted Llama model."""
 
     # Initialize the LLM (ensure the API key is set in environment variables)
     llm = ChatGroq(model="llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))
@@ -53,3 +42,8 @@ def summarize_text(text: str, level: str = "standard") -> str:
     result = chain.invoke({"context": [doc]})
 
     return result
+
+
+if __name__ == "__main__":
+    user_text = input("Put your text : ")
+    print(summarize_text(user_text))
