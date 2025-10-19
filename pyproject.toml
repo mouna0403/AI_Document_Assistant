@@ -7,41 +7,51 @@ requires-python = ">=3.11,<4"
 # Main dependencies
 dependencies = [
     "streamlit==1.38.0",
-    "langchain==0.3.27",
+    "langchain==0.3.0",
     "langchain-groq==0.2.0",
-    "langchain-core==0.3.72",
+    "langchain-core==0.3.0",
     "pypdf==4.3.0",
     "python-dotenv==1.0.1",
-    "pillow==10.0.0",          # Image processing (OCR / PDF images)
-    "pytesseract==0.3.10",     # OCR library
-    "pdf2image==1.16.3",       # Convert PDF pages to images
-    "python-docx==1.1.2",      # For reading DOCX (Word) files
-    "pandas==2.2.2",           # For reading CSV files
-    "numpy==1.26.4",           # Required dependency for pandas
-    "reportlab==4.0.0",        # For creating PDFs (needed for tests)
+    "pillow==10.0.0",
+    "pytesseract==0.3.10",
+    "pdf2image==1.16.3",
+    "python-docx==1.1.2",
+    "pandas==2.2.2",
+    "numpy==1.26.4",
+    "reportlab==4.0.0",
 ]
 
 [project.optional-dependencies]
 test = [
     "pytest==8.0.0",
-    "pytest-cov==4.1.0",       # For code coverage
-    "pytest-mock==3.12.0",     # For mocks
+    "pytest-cov==4.1.0",
+    "pytest-mock==3.12.0",
 ]
 
-[tool.poetry.group.test.dependencies]
-pytest = "==8.0.0"
-pytest-cov = "==4.1.0"
-pytest-mock = "==3.12.0"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-# Tell Poetry where your package lives
-[tool.poetry]
-packages = [
-    { include = "project_summarizer", from = "src" }
+# Tell hatchling where to find your package
+[tool.hatch.build.targets.wheel]
+packages = ["src/project_summarizer"]
+
+# Development dependencies (replaces deprecated tool.uv.dev-dependencies)
+[dependency-groups]
+dev = [
+    "pytest==8.0.0",
+    "pytest-cov==4.1.0",
+    "pytest-mock==3.12.0",
 ]
-
-[tool.uv]
-package = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
