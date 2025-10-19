@@ -14,11 +14,16 @@ jobs:
     # Checkout the repository code
     - uses: actions/checkout@v4
 
-    # Install system dependencies for PDF processing
+    # Install system dependencies for PDF processing and Cairo
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y poppler-utils tesseract-ocr
+        sudo apt-get install -y \
+          poppler-utils \
+          tesseract-ocr \
+          libcairo2-dev \
+          pkg-config \
+          python3-dev
 
     # Install uv package manager
     - name: Install uv
