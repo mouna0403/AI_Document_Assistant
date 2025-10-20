@@ -22,7 +22,7 @@ SUMMARY_PROMPTS = {
 load_dotenv()
 
 
-def summarize_text(text: str) -> str:
+def summarize_text(text: str, level) -> str:
     """Summarize the provided text using a Groq-hosted Llama model."""
 
     # Initialize the LLM (ensure the API key is set in environment variables)
