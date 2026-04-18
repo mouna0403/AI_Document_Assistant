@@ -5,11 +5,16 @@ description = "PDF summarizer with Groq LLM"
 requires-python = ">=3.11,<4"
 
 # Main dependencies
+
+
 dependencies = [
     "streamlit==1.38.0",
     "langchain==0.3.27",
     "langchain-groq==0.2.0",
     "langchain-core==0.3.72",
+    "langchain-community==0.3.21",
+    "langchain-ollama==0.2.3",
+    "langchain-text-splitters==0.3.9",
     "pypdf==4.3.0",
     "python-dotenv==1.0.1",
     "pillow==10.0.0",
@@ -18,9 +23,11 @@ dependencies = [
     "python-docx==1.1.2",
     "pandas==2.2.2",
     "numpy==1.26.4",
-    "reportlab==3.6.13",
-
+    "reportlab==4.2.2",
+    "faiss-cpu==1.8.0.post1",
+    "ollama==0.4.7",
 ]
+
 [project.optional-dependencies]
 test = [
     "pytest==8.0.0",
@@ -32,11 +39,9 @@ test = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Tell hatchling where to find your package
 [tool.hatch.build.targets.wheel]
 packages = ["src/project_summarizer"]
 
-# Development dependencies (replaces deprecated tool.uv.dev-dependencies)
 [dependency-groups]
 dev = [
     "pytest==8.0.0",
