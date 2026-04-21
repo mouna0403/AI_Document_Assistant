@@ -1,3 +1,4 @@
+
 # Base image
 FROM python:3.12-slim
 
@@ -27,7 +28,7 @@ COPY src ./src
 
 # Add src to PYTHONPATH so Python can find project_summarizer module
 ENV PYTHONPATH=/app/src
-
+ENV OLLAMA_HOST=http://ollama:11434
 # Expose Streamlit port
 EXPOSE 8501
 
