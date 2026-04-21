@@ -41,8 +41,9 @@ summary_level = st.radio("🧠 Summary level", ["brief", "standard", "detailed"]
 
 
 if uploaded_file:
-    text = extract_text_from_file(uploaded_file)
-    st.session_state.text = text
+    with st.spinner("📄 Extracting document..."):
+        text = extract_text_from_file(uploaded_file)
+        st.session_state.text = text
 
     if text:
         st.success("✔ Document loaded")
@@ -52,8 +53,9 @@ if uploaded_file:
             st.session_state.summary is None
             or st.session_state.summary_level != summary_level
         ):
-            st.session_state.summary = summarize_text(text, level=summary_level)
-            st.session_state.summary_level = summary_level
+            with st.spinner("✍️ Summarizing document..."):
+                st.session_state.summary = summarize_text(text, level=summary_level)
+                st.session_state.summary_level = summary_level
 
         st.subheader("📝 Summary")
         st.write(st.session_state.summary)
