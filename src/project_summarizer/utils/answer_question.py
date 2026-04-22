@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
@@ -60,8 +60,8 @@ def build_vectorstore(text: str) -> FAISS:
         for i, c in enumerate(chunks)
     ]
 
-    embeddings = OllamaEmbeddings(
-        model="llama3.2:3b", base_url=os.getenv("OLLAMA_HOST", "http://ollama:11434")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
     return FAISS.from_documents(docs, embeddings)
