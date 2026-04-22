@@ -1,3 +1,4 @@
+
 # Base image
 FROM python:3.12-slim
 
@@ -27,7 +28,6 @@ COPY src ./src
 
 # Add src to PYTHONPATH so Python can find project_summarizer module
 ENV PYTHONPATH=/app/src
-
 # Expose Streamlit port
 EXPOSE 8501
 
