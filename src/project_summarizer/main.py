@@ -1,93 +1,117 @@
-import os
-
-import streamlit as st
+from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from project_summarizer.utils.answer_question import answer_question, build_vectorstore
 from project_summarizer.utils.downloader import extract_text_from_file
+from project_summarizer.utils.sessions import create_session, get_session, reset_session
 from project_summarizer.utils.summarizer import summarize_text
 
-st.set_page_config(page_title="Document Q&A", layout="centered")
+app = FastAPI()
 
-st.title("📄 Document Summarizer & Q&A")
-
-if not os.getenv("GROQ_API_KEY"):
-    st.error("Missing GROQ_API_KEY")
-    st.stop()
-
-
-# ---------------- STATE ----------------
-if "vectorstore" not in st.session_state:
-    st.session_state.vectorstore = None
-
-if "text" not in st.session_state:
-    st.session_state.text = None
-
-if "summary" not in st.session_state:
-    st.session_state.summary = None
-
-if "summary_level" not in st.session_state:
-    st.session_state.summary_level = None
-
-if "qa_enabled" not in st.session_state:
-    st.session_state.qa_enabled = False
-
-
-# ---------------- UPLOAD ----------------
-uploaded_file = st.file_uploader(
-    "📤 Upload document", type=["pdf", "docx", "txt", "csv"]
+# =========================
+# CORS
+# =========================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-summary_level = st.radio("🧠 Summary level", ["brief", "standard", "detailed"], index=1)
+# =========================
+# FRONTEND FIX (IMPORTANT)
+# =========================
+# ❌ NE PAS monter sur "/"
+# ✔ sinon ça écrase les routes API
+app.mount(
+    "/static", StaticFiles(directory="src/project_summarizer/static"), name="static"
+)
 
 
-if uploaded_file:
-    with st.spinner("📄 Extracting document..."):
-        text = extract_text_from_file(uploaded_file)
-        st.session_state.text = text
-
-    if text:
-        st.success("✔ Document loaded")
-
-        # ---------------- SUMMARY CACHE ----------------
-        if (
-            st.session_state.summary is None
-            or st.session_state.summary_level != summary_level
-        ):
-            with st.spinner("✍️ Summarizing document..."):
-                st.session_state.summary = summarize_text(text, level=summary_level)
-                st.session_state.summary_level = summary_level
-
-        st.subheader("📝 Summary")
-        st.write(st.session_state.summary)
-
-        # ---------------- Q&A ACTIVATION ----------------
-        if not st.session_state.qa_enabled:
-            choice = st.radio(
-                "💬 Do you want to ask questions about this document?", ["No", "Yes"]
-            )
-
-            if choice == "Yes":
-                with st.spinner("🔍 Preparing your document..."):
-                    st.session_state.vectorstore = build_vectorstore(text)
-                    st.session_state.qa_enabled = True
-
-                st.success("✅ Ready for questions")
+@app.get("/")
+def home():
+    return FileResponse("src/project_summarizer/static/index.html")
 
 
-# ---------------- Q&A ----------------
-if st.session_state.qa_enabled and st.session_state.vectorstore is not None:
-
-    st.subheader("❓ Ask your questions")
-
-    question = st.text_input("Type your question")
-
-    if question:
-        with st.spinner("🤖 Thinking..."):
-            answer = answer_question(st.session_state.vectorstore, question)
-            st.write(answer)
+# =========================
+# SESSION
+# =========================
+@app.get("/session")
+def session():
+    return {"session_id": create_session()}
 
 
-# ---------------- RESET ----------------
-if st.button("🔄 Reset session"):
-    st.session_state.clear()
-    st.rerun()
+# =========================
+# UPLOAD + SUMMARY
+# =========================
+@app.post("/upload")
+async def upload(
+    session_id: str = Form(...),
+    file: UploadFile = File(...),
+    level: str = Form("standard"),
+):
+
+    session = get_session(session_id)
+
+    if not session:
+        return {"error": "invalid session"}
+
+    content = await file.read()
+
+    # extraction texte
+    text = extract_text_from_file(content)
+
+    # résumé
+    summary = summarize_text(text, level)
+
+    session["text"] = text
+    session["summary"] = summary
+    session["vectorstore"] = None
+    session["embeddings_ready"] = False
+
+    return {"summary": summary, "level": level}
+
+
+# =========================
+# START CHAT (EMBEDDINGS ONCE)
+# =========================
+@app.post("/start_chat")
+def start_chat(session_id: str = Form(...)):
+
+    session = get_session(session_id)
+
+    if not session:
+        return {"error": "invalid session"}
+
+    if not session.get("embeddings_ready"):
+        session["vectorstore"] = build_vectorstore(session["text"])
+        session["embeddings_ready"] = True
+
+    return {"status": "ready"}
+
+
+# =========================
+# ASK (RAG)
+# =========================
+@app.post("/ask")
+def ask(session_id: str = Form(...), question: str = Form(...)):
+
+    session = get_session(session_id)
+
+    if not session or not session.get("vectorstore"):
+        return {"error": "chat not ready"}
+
+    answer = answer_question(session["vectorstore"], question)
+
+    return {"answer": answer}
+
+
+# =========================
+# RESET
+# =========================
+@app.post("/reset")
+def reset(session_id: str = Form(...)):
+    reset_session(session_id)
+    return {"status": "reset"}
