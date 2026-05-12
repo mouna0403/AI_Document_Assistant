@@ -32,20 +32,18 @@ def extract_text_from_file(file, ocr_lang="fra") -> str:
     Returns:
         str: extracted text
     """
-    # Read content once
-    content = file.read()
 
-    # Try to detect file type from its binary signature (magic number)
+    # FIX MINIMAL
+    content = file.read() if hasattr(file, "read") else file
+
     def detect_file_type(data: bytes) -> str:
         if data[:4] == b"%PDF":
             return "pdf"
         elif data[:2] == b"PK":
             return "docx"
         elif b"," in data[:200] and b"\n" in data[:200]:
-            # crude heuristic for CSV
             return "csv"
         else:
-            # default to text
             return "txt"
 
     file_type = detect_file_type(content)
@@ -59,11 +57,9 @@ def extract_text_from_file(file, ocr_lang="fra") -> str:
             for i, page in enumerate(reader.pages):
                 page_text = page.extract_text() or ""
 
-                # Check if meaningful text was extracted
                 if len(page_text.strip()) > 50:
                     text += f"\n--- Page {i+1} ---\n{page_text}"
                 else:
-                    # Fallback to OCR for scanned pages
                     try:
                         images = convert_from_bytes(
                             content, first_page=i + 1, last_page=i + 1, dpi=300
@@ -98,7 +94,7 @@ def extract_text_from_file(file, ocr_lang="fra") -> str:
         except Exception as e:
             return f"Error processing CSV: {str(e)}"
 
-    # --- TXT files (fallback) ---
+    # --- TXT files ---
     else:
         try:
             return content.decode("utf-8", errors="ignore").strip()
