@@ -2,7 +2,6 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-
 from project_summarizer.utils.answer_question import answer_question, build_vectorstore
 from project_summarizer.utils.downloader import extract_text_from_file
 from project_summarizer.utils.sessions import create_session, get_session, reset_session
