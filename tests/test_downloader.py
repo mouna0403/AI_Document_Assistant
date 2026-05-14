@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 from PIL import Image, ImageDraw, ImageFont
 
-from project_summarizer.utils.downloader import extract_text_from_file
+from AI_Document_Assitant.utils.downloader import extract_text_from_file
 
 # -----------------------------
 # Helper functions to create test files

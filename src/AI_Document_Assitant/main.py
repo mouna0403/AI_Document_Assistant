@@ -2,10 +2,18 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from project_summarizer.utils.answer_question import answer_question, build_vectorstore
-from project_summarizer.utils.downloader import extract_text_from_file
-from project_summarizer.utils.sessions import create_session, get_session, reset_session
-from project_summarizer.utils.summarizer import summarize_text
+
+from AI_Document_Assitant.utils.answer_question import (
+    answer_question,
+    build_vectorstore,
+)
+from AI_Document_Assitant.utils.downloader import extract_text_from_file
+from AI_Document_Assitant.utils.sessions import (
+    create_session,
+    get_session,
+    reset_session,
+)
+from AI_Document_Assitant.utils.summarizer import summarize_text
 
 app = FastAPI()
 
@@ -25,13 +33,13 @@ app.add_middleware(
 # ❌ NE PAS monter sur "/"
 # ✔ sinon ça écrase les routes API
 app.mount(
-    "/static", StaticFiles(directory="src/project_summarizer/static"), name="static"
+    "/static", StaticFiles(directory="src/AI_Document_Assitant/static"), name="static"
 )
 
 
 @app.get("/")
 def home():
-    return FileResponse("src/project_summarizer/static/index.html")
+    return FileResponse("src/AI_Document_Assitant/static/index.html")
 
 
 # =========================

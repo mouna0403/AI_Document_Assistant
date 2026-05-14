@@ -52,4 +52,4 @@ EXPOSE 8085
 # =========================
 # RUN APP (FASTAPI)
 # =========================
-CMD ["uv", "run", "uvicorn", "project_summarizer.main:app", "--host", "0.0.0.0", "--port", "8085"]
+CMD ["uv", "run", "uvicorn", "AI_Document_Assitant.main:app", "--host", "0.0.0.0", "--port", "8085"]
