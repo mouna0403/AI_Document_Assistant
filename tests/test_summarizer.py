@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from project_summarizer.utils.summarizer import summarize_text
+from AI_Document_Assitant.utils.summarizer import summarize_text
 
 
 class TestSummarizeText:
