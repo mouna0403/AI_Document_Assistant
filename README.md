@@ -1,4 +1,6 @@
-# AI Document Assistant
+<p align="center">
+  <img src="images/AI_doc_assistant.png" width="100%" />
+</p>
 
 This project is a web application that allows you to upload PDF, Word, TXT, or CSV files and generate summaries using the Groq Llama 3.1 model. Users can also interactively ask questions about the summarized content.
 
