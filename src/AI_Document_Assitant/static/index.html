@@ -1,215 +1,507 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>AI Document Assistant</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Document Assistant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #F5F4FF;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1a1a2e;
+    }
+
+    .app { max-width: 720px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding: 2rem;
+    }
+    .header-icon {
+      width: 60px; height: 60px;
+      background: #5244B3;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 26px;
+    }
+    .header h1 { font-size: 24px; font-weight: 600; color: #1a1a2e; margin-bottom: .4rem; }
+    .header p  { font-size: 15px; color: #6b6b8a; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff;
+      border: 1px solid #e4e2f5;
+      border-radius: 18px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 4px 24px rgba(82,68,179,.08); }
+
+    /* ── STEP HEADER ── */
+    .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+    .step-badge {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: #5244B3;
+      color: #fff;
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+
+    /* ── FILE DROP ── */
+    .file-drop {
+      border: 2px dashed #c5c0ee;
+      border-radius: 14px;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      background: #FAFAFE;
+    }
+    .file-drop:hover, .file-drop.drag {
+      border-color: #7F77DD;
+      background: #EEEDFE55;
+    }
+    .file-drop input[type=file] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .file-drop-icon { font-size: 40px; margin-bottom: .75rem; }
+    .file-drop p   { font-size: 14px; color: #6b6b8a; line-height: 1.6; }
+    .file-drop span { color: #5244B3; font-weight: 600; }
+    .file-name {
+      margin-top: .75rem;
+      font-size: 13px; color: #1a1a2e;
+      background: #F5F4FF;
+      padding: 8px 14px;
+      border-radius: 10px;
+      display: none;
+      border: 1px solid #e4e2f5;
+    }
+
+    /* ── SELECT ── */
+    .select-row { display: flex; align-items: center; gap: 12px; margin-top: 1.25rem; }
+    .select-row label { font-size: 14px; color: #6b6b8a; flex-shrink: 0; }
+    select {
+      flex: 1; padding: 9px 14px;
+      border: 1px solid #c5c0ee;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #fff; color: #1a1a2e;
+      outline: none; cursor: pointer;
+      transition: border-color .15s;
+    }
+    select:focus { border-color: #7F77DD; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; margin-top: 1.25rem;
+      padding: 13px;
+      background: #5244B3; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover   { background: #6456C4; }
+    .btn-primary:active  { transform: scale(.98); }
+    .btn-primary:disabled { background: #AFA9EC; cursor: not-allowed; }
+
+    .choice-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-secondary {
+      padding: 10px 22px;
+      border: 1px solid #c5c0ee;
+      border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      background: transparent; color: #1a1a2e;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-secondary:hover { background: #F5F4FF; }
+    .btn-secondary.active {
+      background: #EEEDFE;
+      border-color: #7F77DD;
+      color: #3C3489;
+    }
+
+    /* ── LOADER ── */
+    .loader {
+      display: flex; align-items: center; gap: 10px;
+      padding: .85rem 0;
+      color: #6b6b8a; font-size: 14px;
+    }
+    .dots { display: flex; gap: 5px; }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #7F77DD;
+      animation: bounce 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40%           { transform: translateY(-7px); }
+    }
+
+    /* ── RESULT BOXES ── */
+    .summary-box {
+      background: #F5F4FF;
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      font-size: 14px; line-height: 1.75;
+      color: #1a1a2e;
+      margin-top: 1.1rem;
+      border-left: 4px solid #7F77DD;
+    }
+    .answer-box {
+      background: #EAF3DE;
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      font-size: 14px; line-height: 1.75;
+      color: #1a1a2e;
+      margin-top: 1.1rem;
+      border-left: 4px solid #3B6D11;
+    }
+
+    /* ── CHAT INPUT ── */
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .input-row input {
+      flex: 1; padding: 11px 16px;
+      border: 1px solid #c5c0ee;
+      border-radius: 10px;
+      font-size: 14px; color: #1a1a2e;
+      background: #fff; outline: none;
+      transition: border-color .15s;
+    }
+    .input-row input:focus { border-color: #7F77DD; }
+    .input-row button {
+      padding: 11px 22px;
+      background: #5244B3; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .input-row button:hover  { background: #6456C4; }
+    .input-row button:active { transform: scale(.97); }
+
+    /* ── STATUS BADGE ── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    .badge-success { background: #EAF3DE; color: #3B6D11; }
+    .badge-error   { background: #FCEBEB; color: #A32D2D; }
+
+    /* ── HIDDEN / FADE IN ── */
+    .section-hidden { display: none !important; }
+    .fade-in { animation: fadeIn .35s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
+<body>
 
-<body style="max-width:700px;margin:40px auto;font-family:Arial;">
+<div class="app">
 
-<h2>AI Document Assistant</h2>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">📄</div>
+    <h1>AI Document Assistant</h1>
+    <p>Upload a document, get an instant summary, then ask questions about its content.</p>
+  </div>
 
-<!-- ================= SESSION ================= -->
-<script>
-let session_id = null;
+  <!-- STEP 1 : UPLOAD -->
+  <div class="card fade-in" id="card-upload">
+    <div class="step-header">
+      <div class="step-badge">1</div>
+      <div class="step-title">Upload your document</div>
+    </div>
 
-async function initSession() {
-    const res = await fetch("/session");
-    const data = await res.json();
-    session_id = data.session_id;
-}
-initSession();
-</script>
+    <div class="file-drop" id="dropzone">
+      <input type="file" id="file" accept=".pdf,.doc,.docx,.txt" onchange="onFileChange(event)">
+      <div class="file-drop-icon">⬆️</div>
+      <p>Drag &amp; drop or <span>browse files</span></p>
+      <p style="font-size:12px;margin-top:4px">PDF, DOC, DOCX, TXT</p>
+    </div>
+    <div class="file-name" id="file-name">📎 <span id="file-name-text"></span></div>
 
-<hr>
+    <div class="select-row">
+      <label>Summary level:</label>
+      <select id="level">
+        <option value="brief">Brief</option>
+        <option value="standard" selected>Standard</option>
+        <option value="detailed">Detailed</option>
+      </select>
+    </div>
 
-<!-- ================= UPLOAD ================= -->
-<h3>1. Upload document</h3>
+    <button class="btn-primary" id="btn-upload" onclick="upload()">
+      ✨ Generate summary
+    </button>
 
-<input type="file" id="file">
+    <div class="loader section-hidden" id="upload-loader">
+      <div class="dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      Processing document and generating summary...
+    </div>
 
-<br><br>
+    <div class="summary-box section-hidden" id="summary"></div>
+  </div>
 
-<label>Summary level:</label>
-<select id="level">
-    <option value="brief">Brief</option>
-    <option value="standard" selected>Standard</option>
-    <option value="detailed">Detailed</option>
-</select>
+  <!-- STEP 2 : QUESTION? -->
+  <div class="card section-hidden" id="card-questions">
+    <div class="step-header">
+      <div class="step-badge">2</div>
+      <div class="step-title">Want to ask questions about this document?</div>
+    </div>
+    <div class="choice-row">
+      <button class="btn-secondary" id="btn-yes" onclick="enableChat()">Yes, let's go</button>
+      <button class="btn-secondary" id="btn-no"  onclick="disableChat()">No, thanks</button>
+    </div>
+  </div>
 
-<br><br>
+  <!-- STEP 3 : BUILD EMBEDDINGS -->
+  <div class="card section-hidden" id="card-init">
+    <div class="step-header">
+      <div class="step-badge">3</div>
+      <div class="step-title">Initialize Q&amp;A engine</div>
+    </div>
+    <p style="font-size:13px;color:#6b6b8a;margin-bottom:1rem">
+      This builds the semantic index of your document (one-time per upload).
+    </p>
+    <button class="btn-primary" id="btn-build" onclick="startChat()">
+      🔍 Build embeddings
+    </button>
+    <div class="loader section-hidden" id="chat-loader">
+      <div class="dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      Building embeddings...
+    </div>
+    <div id="chat-status" style="margin-top:.85rem"></div>
+  </div>
 
-<button onclick="upload()">Generate summary</button>
+  <!-- STEP 4 : CHAT -->
+  <div class="card section-hidden" id="card-chat">
+    <div class="step-header">
+      <div class="step-badge">4</div>
+      <div class="step-title">Ask questions</div>
+    </div>
+    <div class="input-row">
+      <input type="text" id="question" placeholder="What is this document about?">
+      <button onclick="ask()">Send</button>
+    </div>
+    <div class="loader section-hidden" id="ask-loader">
+      <div class="dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      Searching in document...
+    </div>
+    <div class="answer-box section-hidden" id="answer"></div>
+  </div>
 
-<p id="upload_loading" style="color:blue;"></p>
-<p id="summary"></p>
-
-<hr>
-
-<!-- ================= QUESTION STEP ================= -->
-<div id="question_block" style="display:none;">
-    <h3>2. Do you want to ask questions?</h3>
-
-    <button onclick="enableChat()">Yes</button>
-    <button onclick="disableChat()">No</button>
-</div>
-
-<hr>
-
-<!-- ================= CHAT INIT ================= -->
-<div id="chat_init_block" style="display:none;">
-    <h3>3. Initialize Q&A</h3>
-
-    <button onclick="startChat()">Build embeddings</button>
-
-    <p id="chat_loading" style="color:blue;"></p>
-    <p id="chat_status"></p>
-</div>
-
-<hr>
-
-<!-- ================= CHAT ================= -->
-<div id="chat_block" style="display:none;">
-    <h3>4. Ask questions</h3>
-
-    <input id="question" placeholder="Ask a question..." style="width:100%;padding:8px;">
-
-    <br><br>
-
-    <button onclick="ask()">Send</button>
-
-    <p id="ask_loading" style="color:blue;"></p>
-    <p id="answer"></p>
-</div>
+</div><!-- /.app -->
 
 <!-- ================= JS ================= -->
 <script>
 
-// ----------- RESET UI -----------
+let session_id = null;
+
+async function initSession() {
+    try {
+        const res  = await fetch("/session");
+        const data = await res.json();
+        session_id = data.session_id;
+    } catch(e) { console.warn("Session init failed", e); }
+}
+initSession();
+
+/* ── UTILS ── */
+function show(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("section-hidden");
+    el.classList.add("fade-in");
+}
+function hide(id) {
+    document.getElementById(id).classList.add("section-hidden");
+}
+function setText(id, txt) {
+    document.getElementById(id).textContent = txt;
+}
+
 function resetUI() {
-    document.getElementById("summary").innerText = "";
-    document.getElementById("answer").innerText = "";
-    document.getElementById("chat_status").innerText = "";
-
-    document.getElementById("upload_loading").innerText = "";
-    document.getElementById("chat_loading").innerText = "";
-    document.getElementById("ask_loading").innerText = "";
-
-    document.getElementById("question_block").style.display = "none";
-    document.getElementById("chat_init_block").style.display = "none";
-    document.getElementById("chat_block").style.display = "none";
+    hide("upload-loader"); hide("summary");
+    hide("card-questions");
+    hide("card-init");     hide("card-chat");
+    hide("chat-loader");   hide("chat-status");
+    hide("ask-loader");    hide("answer");
 }
 
-// ----------- CHECK SESSION -----------
-function checkSession() {
-    if (!session_id) {
-        alert("Session not ready");
-        return false;
-    }
-    return true;
+/* ── FILE SELECTION ── */
+function onFileChange(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    document.getElementById("file-name-text").textContent = f.name;
+    document.getElementById("file-name").style.display = "block";
 }
 
-// ----------- UPLOAD -----------
+/* Drag & drop visual feedback */
+const dz = document.getElementById("dropzone");
+dz.addEventListener("dragover",  e => { e.preventDefault(); dz.classList.add("drag"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+dz.addEventListener("drop",      e => { e.preventDefault(); dz.classList.remove("drag"); });
+
+/* ── UPLOAD ── */
 async function upload() {
-
-    if (!checkSession()) return;
-
-    // ✔ RESET COMPLET AVANT NOUVEAU DOC
+    if (!session_id) { alert("Session not ready. Please refresh."); return; }
     resetUI();
 
-    let file = document.getElementById("file").files[0];
-    let level = document.getElementById("level").value;
+    const file  = document.getElementById("file").files[0];
+    const level = document.getElementById("level").value;
 
-    document.getElementById("upload_loading").innerText =
-        "Processing document and generating summary...";
+    if (!file) { alert("Please select a file first."); return; }
 
-    let form = new FormData();
+    const btn = document.getElementById("btn-upload");
+    btn.disabled    = true;
+    btn.textContent = "Processing…";
+
+    show("upload-loader");
+
+    const form = new FormData();
     form.append("session_id", session_id);
-    form.append("file", file);
-    form.append("level", level);
+    form.append("file",       file);
+    form.append("level",      level);
 
-    const res = await fetch("/upload", {
-        method: "POST",
-        body: form
-    });
+    try {
+        const res  = await fetch("/upload", { method: "POST", body: form });
+        const data = await res.json();
 
-    const data = await res.json();
+        hide("upload-loader");
 
-    document.getElementById("upload_loading").innerText = "";
+        const box = document.getElementById("summary");
+        box.textContent = data.summary || "Error generating summary.";
+        show("summary");
+        show("card-questions");
 
-    document.getElementById("summary").innerText =
-        data.summary || "Error generating summary";
+    } catch(e) {
+        hide("upload-loader");
+        const box = document.getElementById("summary");
+        box.textContent = "Connection error. Make sure the backend server is running.";
+        show("summary");
+    }
 
-    // Affiche étape suivante
-    document.getElementById("question_block").style.display = "block";
+    btn.disabled    = false;
+    btn.textContent = "✨ Generate summary";
 }
 
-// ----------- USER CHOICE -----------
+/* ── CHOICE ── */
 function enableChat() {
-    document.getElementById("chat_init_block").style.display = "block";
+    document.getElementById("btn-yes").classList.add("active");
+    document.getElementById("btn-no").classList.remove("active");
+    show("card-init");
+    hide("card-chat");
 }
-
 function disableChat() {
-    document.getElementById("chat_init_block").style.display = "none";
-    document.getElementById("chat_block").style.display = "none";
+    document.getElementById("btn-no").classList.add("active");
+    document.getElementById("btn-yes").classList.remove("active");
+    hide("card-init");
+    hide("card-chat");
 }
 
-// ----------- BUILD EMBEDDINGS -----------
+/* ── BUILD EMBEDDINGS ── */
 async function startChat() {
+    if (!session_id) { alert("Session not ready."); return; }
 
-    if (!checkSession()) return;
+    const btn = document.getElementById("btn-build");
+    btn.disabled    = true;
+    btn.textContent = "Building…";
 
-    document.getElementById("chat_loading").innerText =
-        "Building embeddings (one-time process)...";
+    show("chat-loader");
 
-    let form = new FormData();
+    const form = new FormData();
     form.append("session_id", session_id);
 
-    const res = await fetch("/start_chat", {
-        method: "POST",
-        body: form
-    });
+    try {
+        const res  = await fetch("/start_chat", { method: "POST", body: form });
+        const data = await res.json();
 
-    const data = await res.json();
+        hide("chat-loader");
 
-    document.getElementById("chat_loading").innerText = "";
+        const st = document.getElementById("chat-status");
+        if (data.status === "ready") {
+            st.innerHTML = '<span class="status-badge badge-success">✓ Q&A ready</span>';
+            show("chat-status");
+            show("card-chat");
+        } else {
+            st.innerHTML = '<span class="status-badge badge-error">✗ Error initializing chat</span>';
+            show("chat-status");
+        }
 
-    if (data.status === "ready") {
-        document.getElementById("chat_status").innerText = "Q&A ready";
+    } catch(e) {
+        hide("chat-loader");
+        document.getElementById("chat-status").innerHTML =
+            '<span class="status-badge badge-error">✗ Connection error</span>';
+        show("chat-status");
+    }
 
-        // ✔ AFFICHER INPUT SEULEMENT ICI
-        document.getElementById("chat_block").style.display = "block";
-    } else {
-        document.getElementById("chat_status").innerText = "Error initializing chat";
+    btn.disabled    = false;
+    btn.textContent = "🔍 Build embeddings";
+}
+
+/* ── ASK ── */
+async function ask() {
+    if (!session_id) { alert("Session not ready."); return; }
+
+    const q = document.getElementById("question").value.trim();
+    if (!q) return;
+
+    show("ask-loader");
+    hide("answer");
+
+    const form = new FormData();
+    form.append("session_id", session_id);
+    form.append("question",   q);
+
+    try {
+        const res  = await fetch("/ask", { method: "POST", body: form });
+        const data = await res.json();
+
+        hide("ask-loader");
+        const box = document.getElementById("answer");
+        box.textContent = data.answer || "No answer found.";
+        show("answer");
+
+    } catch(e) {
+        hide("ask-loader");
+        const box = document.getElementById("answer");
+        box.textContent = "Connection error.";
+        show("answer");
     }
 }
 
-// ----------- ASK -----------
-async function ask() {
-
-    if (!checkSession()) return;
-
-    let question = document.getElementById("question").value;
-
-    document.getElementById("ask_loading").innerText =
-        "Searching in document...";
-
-    let form = new FormData();
-    form.append("session_id", session_id);
-    form.append("question", question);
-
-    const res = await fetch("/ask", {
-        method: "POST",
-        body: form
-    });
-
-    const data = await res.json();
-
-    document.getElementById("ask_loading").innerText = "";
-
-    document.getElementById("answer").innerText =
-        data.answer || "No answer found";
-}
+/* Enter key in input */
+document.getElementById("question").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") ask();
+});
 
 </script>
 
