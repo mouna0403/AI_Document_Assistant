@@ -42,7 +42,7 @@ jobs:
     # Run tests with coverage reporting
     - name: Run tests with coverage
       run: |
-        uv run pytest -v tests/ --cov=src/project_summarizer --cov-report=xml
+        uv run pytest -v tests/ --cov=src/AI_Document_Assitant --cov-report=xml
       env:
         GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
