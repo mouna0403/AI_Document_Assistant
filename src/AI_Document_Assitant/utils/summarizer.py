@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO)
 # CONFIGURATION
 # ---------------------------------------------------------------------------
 
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "openai/gpt-oss-120b"
 CHUNK_SIZE = 4000  # chars — ~1000 tokens, well inside the 8k context window
 CHUNK_OVERLAP = 200
 MAX_WORKERS = 5  # Groq free tier handles ~5 parallel calls safely
