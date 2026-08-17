@@ -75,7 +75,7 @@ def answer_question(vectorstore: FAISS, question: str) -> str:
     k = get_k(vectorstore)
 
     llm = ChatGroq(
-        model="llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"), temperature=0
+        model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"), temperature=0
     )
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": k})
