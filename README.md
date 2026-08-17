@@ -35,13 +35,27 @@ GROQ_API_KEY=your_groq_api_key_here
 
 From the project root:
 
+## How to Run
+
+### Option 1 — Run with `uv`
+
+#### 1. Install `uv`
+
+If `uv` is not already installed:
+
+```powershell
+pip install uv
+```
+
+#### 2. Run the application
+
 ```powershell
 $env:PYTHONPATH="src"
 uv sync
 uv run uvicorn AI_Document_Assitant.main:app --reload
 ```
 
-This will start the FastAPI application in development mode with automatic reload when files are changed.
+This will start the FastAPI application in development mode with automatic reload when files are changed. The application will be available at http://127.0.0.1:8000.
 
 Make sure your `.env` file contains a valid Groq API key.
 
