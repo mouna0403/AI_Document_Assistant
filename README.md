@@ -31,26 +31,42 @@ GROQ_API_KEY=your_groq_api_key_here
 
 ## How to Run
 
-### 1. Stop any running container
+### Option 1 — Run with `uv` (recommended)
+
+From the project root:
+
+```powershell
+$env:PYTHONPATH="src"
+uv sync
+uv run uvicorn AI_Document_Assitant.main:app --reload
+```
+
+This will start the FastAPI application in development mode with automatic reload when files are changed.
+
+Make sure your `.env` file contains a valid Groq API key.
+
+### Option 2 — Run with Docker
+
+#### 1. Stop any running container
 
 If a previous container is still running, stop it with Ctrl+C in the terminal, or:
 
-```bash id="run1"
+```bash
 docker ps
 docker stop <CONTAINER_ID>
 ```
 
-### 2. Build the Docker image
+#### 2. Build the Docker image
 
 From the project root:
 
-```bash id="run2"
+```bash
 docker build -t summarizer-app .
 ```
 
-### 3. Run the container
+#### 3. Run the container
 
-```bash id="run3"
+```bash
 docker run -p 8085:8085 --env-file .env summarizer-app
 ```
 

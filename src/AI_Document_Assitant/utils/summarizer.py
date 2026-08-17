@@ -30,9 +30,9 @@ logging.basicConfig(level=logging.INFO)
 # ---------------------------------------------------------------------------
 
 GROQ_MODEL = "openai/gpt-oss-120b"
-CHUNK_SIZE = 4000  # chars — ~1000 tokens, well inside the 8k context window
-CHUNK_OVERLAP = 200
-MAX_WORKERS = 5  # Groq free tier handles ~5 parallel calls safely
+CHUNK_SIZE = 3000  # chars — ~750 tokens, leaving room for prompts/context
+CHUNK_OVERLAP = 200  # chars — preserves context between chunks
+MAX_WORKERS = 2  # Groq free tier — safer with the 8,000 tokens/minute limit
 MAX_RETRIES = 3  # retry count for transient failures (429, network)
 
 
